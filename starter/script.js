@@ -1,13 +1,17 @@
 'use strict';
 
 //Selecting elements
-const score0El = document.querySelector('#score--0');
+const player0El = document.querySelector('.player--0');
+const player1El = document.querySelector('.player--1');
+const score0El = document.querySelector('#score--0'); //it´s an ID not a classname
 const score1El = document.getElementById('score--1');
-const currentEl0 = document.getElementById('current--0');
-const currentEl1 = document.getElementById('current--1');
+const current0El = document.getElementById('current--0');
+const current1El = document.getElementById('current--1');
+
 const diceEl = document.querySelector('.dice');
+const btnNew = document.querySelector('.btn--new');
 const btnRoll = document.querySelector('.btn--roll');
-const btnHold = document.querySelector('.bton--hold');
+const btnHold = document.querySelector('.btn--hold');
 
 //Create "hidden" class in CSS
 
@@ -18,28 +22,53 @@ diceEl.classList.add('hidden');
 let currentScore = 0;
 const scores = [0, 0];
 let activePlayer = 0;
-
+let playing = true;
+const switchPlayer = function () {
+  activePlayer = activePlayer === 0 ? 1 : 0;
+  player0El.classList.toggle('player--active');
+  player1El.classList.toggle('player--active');
+};
 //Rolling dice functionality
 btnRoll.addEventListener('click', function () {
-  //generating a random dice roll
-  //The const dice has to be here because we do not want a global variable. We want to generate a new random number every time we press the button
+  if (playing) {
+    // 1. Generating a random dice roll
+    const dice = Math.trunc(Math.random() * 6) + 1;
 
-  const dice = Math.trunc(Math.random() * 6) + 1;
+    // 2. Display dice
+    diceEl.classList.remove('hidden');
+    diceEl.src = `dice-${dice}.png`;
 
-  //display dice
-  diceEl.classList.remove('hidden');
-  //we pass in dice.src as a string. Dice is a number. It is going to take the src as a string and select the png by number
-  diceEl.src = `dice-${dice}.png`;
+    // 3. Check for rolled 1
+    if (dice !== 1) {
+      // Add dice to current score
+      currentScore += dice;
+      document.getElementById(`current--${activePlayer}`).textContent =
+        currentScore;
+    } else {
+      // Switch to next player
+      switchPlayer();
+    }
+  }
+});
+btnHold.addEventListener('click', function () {
+  if (playing) {
+    // 1. Add current score to active player's score
+    scores[activePlayer] += currentScore;
+    // scores[1] = scores[1] + currentScore
 
-  //check for rolled 1
-  if (dice !== 1) {
-    currentScore += dice;
-    document.getElementById(`current--${activePlayer}`).textContent =
-      currentScore;
+    document.getElementById(`score--${activePlayer}`).textContent =
+      scores[activePlayer];
+  }
+  if (scores[activePlayer] >= 100) {
+    playing = false;
+    diceEl.classList.add('hidden');
+    document
+      .querySelector(`.player--${activePlayer}`)
+      .classList.add(`player--winner`);
+    document
+      .querySelector(`.player--${activePlayer}`)
+      .classList.remove(`player--active`);
   } else {
-    //switch to next player
-    activePlayer = activePlayer === 0 ? 1 : 0;
-    player0El.classList.toggle('player--active');
-    player1El.classList.toggle('player--active');
+    switchPlayer();
   }
 });
